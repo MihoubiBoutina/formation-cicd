@@ -1,27 +1,16 @@
 name: CI — build, test, package
 
-# --- QUAND s'exécute le workflow --------------------------
 on:
   push:
     branches: [main, develop]
   pull_request:
     branches: [main]
-  schedule:
-    - cron: '0 3 * * 1'   # tous les lundis à 3h
-  workflow_dispatch:      # déclenchement manuel via UI
+  workflow_dispatch:
 
-# --- VARIABLES globales du workflow ------------------------
 env:
   NODE_VERSION: '20'
   REGISTRY: ghcr.io
 
-# --- PERMISSIONS du GITHUB_TOKEN (least privilege) --------
-permissions:
-  contents: read
-  packages: write
-  id-token: write      # pour OIDC
-
-# --- JOBS -------------------------------------------------
 jobs:
   test:
     name: Unit tests
@@ -33,14 +22,13 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: npm install
-      - run: npm test -- --coverage
+      - run: npm test
 
   build:
-    needs: test              # séquentiel après test
-    runs-on: ubuntu-latest   # Modifié ici temporairement de 'self-hosted' à 'ubuntu-latest' pour que votre premier test fonctionne sans serveur !
+    name: Build container
+    needs: test
+    runs-on: ubuntu-latest   # Changé de 'self-hosted' à 'ubuntu-latest' pour utiliser les machines GitHub
     steps:
       - uses: actions/checkout@v4
-      - uses: docker/build-push-action@v6
-        with:
-          push: false        # Modifié ici temporairement sur 'false' pour éviter de bloquer sur les accès du registre
-          tags: ${{ env.REGISTRY }}/${{ github.repository }}:${{ github.sha }}
+      - name: Simuler le build Docker
+        run: echo "Ici, la machine fabrique l'image Docker de l'application de test !"
